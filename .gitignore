@@ -1,0 +1,66 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ipynb_checkpoints/
+
+# Virtual environments (uv puts its venv here; uv.lock SHOULD be committed)
+.venv/
+venv/
+env/
+
+# --- Challenge data: never commit, it's gigabytes and redistributing may violate terms ---
+controls/
+data/
+datasets/
+*.h5ad
+*.h5
+*.vcc
+*.loom
+*.mtx
+*.mtx.gz
+
+# Downloaded training data archives
+*.zip
+*.tar
+*.tar.gz
+
+# --- Predictions / submissions (regenerate with the scripts instead) ---
+prediction*.h5ad
+prediction*.vcc
+smoke*.vcc
+submissions/
+chunks/
+
+# --- Model training artifacts ---
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+checkpoints/
+lightning_logs/
+wandb/
+runs/
+outputs/
+
+# --- Large intermediate arrays / tables ---
+*.npz
+*.npy
+*.parquet
+*.feather
+*.pkl
+*.pickle
+
+# --- Local working notes, not part of the public repo ---
+CLAUDE.md
+NOTES.md
+
+# --- Tooling / editor ---
+.vscode/
+.idea/
+.claude/settings.local.json
+
+# --- OS noise ---
+.DS_Store
+Thumbs.db
+desktop.ini

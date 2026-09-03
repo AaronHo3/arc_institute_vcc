@@ -1,0 +1,21 @@
+[project]
+name = "vcc2026"
+version = "0.1.0"
+description = "Arc Virtual Cell Challenge 2026: when do perturbation-response predictions transfer to a new cell context?"
+readme = "README.md"
+authors = [
+    { name = "Aaron Ho", email = "aaronho0218@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "anndata>=0.13.3.post0",
+    "h5py>=3.16.0",
+    "numpy>=2.5.2",
+    "pandas>=3.0.5",
+    "scipy>=1.18.1",
+]
+
+[dependency-groups]
+dev = [
+    "vcc-cli>=0.2.0",
+]
