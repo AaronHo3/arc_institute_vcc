@@ -24,6 +24,7 @@ import tempfile
 from pathlib import Path
 
 import anndata as ad
+import h5py
 import numpy as np
 import pandas as pd
 import scipy.sparse as sp
@@ -126,8 +127,13 @@ def verify(path: Path, perts: list[str], gene_names: list[str]) -> None:
     if not bad.empty:
         print(f"    e.g. {bad.head().to_dict()}")
 
+    # Backed sparse matrices don't always expose .nnz; read it from the file.
     X = adata.X
-    nnz = X.nnz if hasattr(X, "nnz") else None
+    if hasattr(X, "nnz"):
+        nnz = X.nnz
+    else:
+        with h5py.File(path, "r") as f:
+            nnz = int(f["X/indptr"][-1]) if "X/indptr" in f else None
     if nnz is not None:
         print(f"  stored entries        {nnz:,}  cap {STORED_ENTRY_CAP:,}  "
               f"{'OK' if nnz <= STORED_ENTRY_CAP else 'OVER CAP'}")
