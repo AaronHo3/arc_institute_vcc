@@ -8,6 +8,7 @@ positive = better than it. Overall is the unweighted mean of the six metrics.
 |---|---|---|---|---|---|---|---|---|---|---|
 | 2026-09-03 | predict-no-change | YBSJ2Ua87fYVq24VhXHb | 568 | -0.3039 | -0.0088 | 0.0000 | -0.0053 | -1.7158 | -0.0111 | -0.0826 |
 | 2026-09-04 | target-knockdown | 8SnxzMGp74VQRoU7cJzk | 552 | -0.2987 | +0.0215 | 0.0000 | -0.0064 | -1.7161 | -0.0087 | -0.0826 |
+| 2026-09-04 | global-mean-effect | DWEB4FyVrq7t7NLJh6ko | 265 | +0.0575 | +0.3990 | 0.0000 | +0.0596 | -0.1927 | +0.0980 | -0.0191 |
 
 ## Notes
 
@@ -39,3 +40,23 @@ perturbation. Reads:
 - nmae/reach shifts (~±0.003) are likely run-to-run resampling noise (the RNG
   stream differs from the null run), giving a rough noise floor for reading
   future score differences.
+
+**2026-09-04, global-mean-effect.** Replogle K562 genome-wide LFC signatures
+applied multiplicatively to resampled controls, identically in all three
+contexts (context-blind); 272/300 perts covered, rest fell back to
+target-knockdown. Rank 552 -> 265. Reads:
+
+- fid recovered from -1.716 to -0.193: ~89% of the null's direction-fidelity
+  gap closed by borrowing one cell line's measured effects with zero context
+  modeling. Cross-context conservation of perturbation direction is
+  substantial in these contexts.
+- pds jumped to +0.40 — borrowed signatures make predictions strongly
+  identifiable.
+- jac still negative (-0.019): predicting *which genes reach significance*
+  remains below reference even when directions are right. Signatures are
+  sparse (median 2 genes |LFC|>1), so predicted DE sets are thin.
+- mse = 0 for the third consecutive submission despite three very different
+  prediction sets. The metric appears saturated/clamped at the reference
+  value — a metric-behavior question to investigate (cell-eval source).
+- Aggregate crossed zero: a lookup table with no training now beats the
+  server reference. The bar for STATE is now this, not the null.
