@@ -64,6 +64,42 @@ def load_controls(path: Path, gene_names: list[str]) -> sp.csr_matrix:
     return X.astype(np.float32)
 
 
+def apply_multipliers(
+    block: sp.csr_matrix, mult: np.ndarray, rng: np.random.Generator
+) -> sp.csr_matrix:
+    """Scale each stored count by its gene's multiplier, then stochastically
+    round (floor + Bernoulli on the fraction) so counts stay integral with
+    the expected value exact. Only nonzero entries are touched: a gene at
+    zero stays zero even if its multiplier says up."""
+    vals = block.data * mult[block.indices]
+    floor = np.floor(vals)
+    block.data = (floor + (rng.random(vals.size) < (vals - floor))).astype(np.float32)
+    block.eliminate_zeros()
+    return block
+
+
+def load_multipliers(
+    path: Path, gene_names: list[str], target_residual: float
+) -> dict[str, np.ndarray]:
+    """Load per-perturbation LFC signatures (perts x genes AnnData from
+    compute_signatures.py) as fold-change multiplier vectors over the full
+    gene panel. The target gene's own multiplier is forced to
+    target_residual, matching the challenge's stated CRISPRi efficacy."""
+    sig = ad.read_h5ad(path)
+    col_of = {g: i for i, g in enumerate(gene_names)}
+    sig_cols = np.array([col_of[g] for g in sig.var_names])
+    lfc = np.asarray(sig.X)
+
+    mults = {}
+    for i, pert in enumerate(sig.obs_names):
+        m = np.ones(len(gene_names), dtype=np.float32)
+        m[sig_cols] = 2.0 ** lfc[i]
+        if pert in col_of:
+            m[col_of[pert]] = target_residual
+        mults[str(pert)] = m
+    return mults
+
+
 def knock_down_gene(
     block: sp.csr_matrix, col: int, residual: float, rng: np.random.Generator
 ) -> sp.csr_matrix:
@@ -84,13 +120,16 @@ def build_chunk(
     gene_names: list[str],
     rng: np.random.Generator,
     knockdown_residual: float | None = None,
+    multipliers: dict[str, np.ndarray] | None = None,
 ) -> ad.AnnData:
     """Predictions for one block of perturbations in one context.
 
-    Predict-no-change: for each perturbation, sample CELLS_PER_PERT control
-    cells with replacement and relabel them with that perturbation. With
+    Base behavior (predict-no-change): for each perturbation, sample
+    CELLS_PER_PERT control cells with replacement and relabel them. With
     knockdown_residual set, additionally thin the target gene's own counts
-    to that fraction (target-kd baseline). Returns an AnnData with obs
+    to that fraction (target-kd). With multipliers set, scale every gene by
+    that perturbation's fold-change vector instead (global-mean); perts
+    without a signature fall back to target-kd. Returns an AnnData with obs
     columns `target_gene` and `context`. Any real model replaces this
     function and keeps the same signature.
     """
@@ -101,7 +140,9 @@ def build_chunk(
     for pert in perts:
         idx = rng.choice(n_ctrl, size=CELLS_PER_PERT, replace=True)
         block = ctrl[idx]
-        if knockdown_residual is not None and pert in col_of:
+        if multipliers is not None and pert in multipliers:
+            block = apply_multipliers(block, multipliers[pert], rng)
+        elif knockdown_residual is not None and pert in col_of:
             block = knock_down_gene(block, col_of[pert], knockdown_residual, rng)
         blocks.append(block)
         target_gene.extend([pert] * CELLS_PER_PERT)
@@ -180,15 +221,21 @@ def main() -> None:
                     help="perturbations per on-disk chunk; lower it if you run out of RAM")
     ap.add_argument("--n-perts", type=int, default=None,
                     help="use only the first N perturbations, for smoke tests")
-    ap.add_argument("--model", choices=["no-change", "target-kd"], default="no-change",
+    ap.add_argument("--model", choices=["no-change", "target-kd", "global-mean"],
+                    default="no-change",
                     help="no-change: resampled controls as-is; "
-                         "target-kd: also thin the target gene's counts")
+                         "target-kd: also thin the target gene's counts; "
+                         "global-mean: apply per-pert LFC signatures "
+                         "(context-blind), needs --signatures")
+    ap.add_argument("--signatures", type=Path, default=None,
+                    help="perts x genes LFC AnnData from compute_signatures.py")
     ap.add_argument("--residual", type=float, default=0.15,
-                    help="surviving fraction of target-gene counts for target-kd")
+                    help="surviving fraction of target-gene counts "
+                         "(target-kd, and forced on-target value for global-mean)")
     ap.add_argument("--seed", type=int, default=0)
     args = ap.parse_args()
 
-    residual = args.residual if args.model == "target-kd" else None
+    residual = args.residual if args.model in ("target-kd", "global-mean") else None
 
     d = args.controls_dir
     gene_names = load_gene_names(d / "gene_names.csv")
@@ -197,9 +244,17 @@ def main() -> None:
         perts = perts[: args.n_perts]
         print(f"SMOKE TEST: {len(perts)} perturbations only, not a valid submission")
 
-    model_desc = ("no-change" if residual is None
-                  else f"target-kd (residual {residual})")
-    print(f"model: {model_desc}")
+    multipliers = None
+    if args.model == "global-mean":
+        if args.signatures is None:
+            ap.error("--model global-mean requires --signatures")
+        multipliers = load_multipliers(args.signatures, gene_names, args.residual)
+        covered = sum(p in multipliers for p in perts)
+        print(f"signatures cover {covered}/{len(perts)} perturbations "
+              f"(rest fall back to target-kd)")
+
+    print(f"model: {args.model}"
+          + (f" (residual {residual})" if residual is not None else ""))
     print(f"{len(gene_names):,} genes, {len(perts):,} perturbations, "
           f"{len(CONTEXTS)} contexts")
     print(f"target rows: {len(perts) * CELLS_PER_PERT * len(CONTEXTS):,}")
@@ -217,7 +272,8 @@ def main() -> None:
             for start in range(0, len(perts), args.chunk_perts):
                 block = perts[start : start + args.chunk_perts]
                 chunk = build_chunk(ctrl, block, ctx, gene_names, rng,
-                                    knockdown_residual=residual)
+                                    knockdown_residual=residual,
+                                    multipliers=multipliers)
                 p = tmpdir / f"chunk_{ctx}_{start:05d}.h5ad"
                 chunk.write_h5ad(p, compression="gzip")
                 chunk_paths.append(p)
