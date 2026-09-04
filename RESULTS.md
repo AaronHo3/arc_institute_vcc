@@ -60,3 +60,27 @@ target-knockdown. Rank 552 -> 265. Reads:
   value — a metric-behavior question to investigate (cell-eval source).
 - Aggregate crossed zero: a lookup table with no training now beats the
   server reference. The bar for STATE is now this, not the null.
+
+## Public-data census (2026-09-04)
+
+Coverage of the 300 validation perturbations by public CRISPRi datasets:
+
+| Source | Contexts | Coverage |
+|---|---|---|
+| Replogle 2022 K562 genome-wide | K562 | **272/300** |
+| VCC 2025 training | H1 hESC | 13/300 (all within the 272) |
+| Jiang 2025 | 6 cancer lines | 9/300 (all within the 272) |
+| Replogle 2022 essential panels | K562, RPE1 | 0/300 |
+| Nadig 2025 | HepG2, Jurkat | 0/300 |
+
+28 perturbations have no measured public effect in any checked source. The
+panel appears designed so that exactly one dataset (the genome-wide K562
+screen) provides broad coverage; per-context lookup ("nearest-context
+transfer") is not buildable for this panel.
+
+Context identities (identify_contexts.py --depmap, Spearman on top-2000
+variable genes vs DepMap 24Q4): A = Jurkat (r=0.881, rank 1/1673),
+B = HeLa (0.875), C = CAL-33 (0.856); A independently confirmed against
+Nadig's Jurkat CRISPRi controls. No context resembles K562, so the
+global-mean fid recovery reflects genuinely cross-lineage effect
+conservation.
