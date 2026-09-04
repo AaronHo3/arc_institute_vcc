@@ -1,0 +1,12 @@
+[datasets]
+replogle = "C:/Users/aaron/vcc_data/state_train/replogle/"
+nadig = "C:/Users/aaron/vcc_data/state_train/nadig/"
+h1 = "C:/Users/aaron/vcc_data/state_train/h1/"
+
+[training]
+replogle = "train"
+nadig = "train"
+h1 = "train"
+
+[zeroshot]
+"nadig.Jurkat" = "test"
