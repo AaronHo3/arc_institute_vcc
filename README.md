@@ -17,7 +17,7 @@ uv run vcc login --token-stdin   # token from the challenge site's Credentials p
 
 ## Data
 
-Keep data outside the repo (it's large and gitignored anyway):
+Keep data outside the repo:
 
 ```bash
 uv run vcc datasets list

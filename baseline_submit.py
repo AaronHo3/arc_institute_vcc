@@ -64,26 +64,46 @@ def load_controls(path: Path, gene_names: list[str]) -> sp.csr_matrix:
     return X.astype(np.float32)
 
 
+def knock_down_gene(
+    block: sp.csr_matrix, col: int, residual: float, rng: np.random.Generator
+) -> sp.csr_matrix:
+    """Binomially thin one gene's counts: each molecule survives with
+    probability `residual`. Keeps counts integral and zeros sparse."""
+    block = block.tocsc()
+    start, end = block.indptr[col], block.indptr[col + 1]
+    vals = block.data[start:end]
+    block.data[start:end] = rng.binomial(vals.astype(np.int64), residual).astype(np.float32)
+    block.eliminate_zeros()
+    return block.tocsr()
+
+
 def build_chunk(
     ctrl: sp.csr_matrix,
     perts: list[str],
     context: str,
     gene_names: list[str],
     rng: np.random.Generator,
+    knockdown_residual: float | None = None,
 ) -> ad.AnnData:
     """Predictions for one block of perturbations in one context.
 
     Predict-no-change: for each perturbation, sample CELLS_PER_PERT control
-    cells with replacement and relabel them with that perturbation. Returns
-    an AnnData with obs columns `target_gene` and `context`. Any real model
-    replaces this function and keeps the same signature.
+    cells with replacement and relabel them with that perturbation. With
+    knockdown_residual set, additionally thin the target gene's own counts
+    to that fraction (target-kd baseline). Returns an AnnData with obs
+    columns `target_gene` and `context`. Any real model replaces this
+    function and keeps the same signature.
     """
     n_ctrl = ctrl.shape[0]
+    col_of = {g: i for i, g in enumerate(gene_names)}
     blocks, target_gene, obs_names = [], [], []
 
     for pert in perts:
         idx = rng.choice(n_ctrl, size=CELLS_PER_PERT, replace=True)
-        blocks.append(ctrl[idx])
+        block = ctrl[idx]
+        if knockdown_residual is not None and pert in col_of:
+            block = knock_down_gene(block, col_of[pert], knockdown_residual, rng)
+        blocks.append(block)
         target_gene.extend([pert] * CELLS_PER_PERT)
         obs_names.extend(f"{context}_{pert}_{i:04d}" for i in range(CELLS_PER_PERT))
 
@@ -160,8 +180,15 @@ def main() -> None:
                     help="perturbations per on-disk chunk; lower it if you run out of RAM")
     ap.add_argument("--n-perts", type=int, default=None,
                     help="use only the first N perturbations, for smoke tests")
+    ap.add_argument("--model", choices=["no-change", "target-kd"], default="no-change",
+                    help="no-change: resampled controls as-is; "
+                         "target-kd: also thin the target gene's counts")
+    ap.add_argument("--residual", type=float, default=0.15,
+                    help="surviving fraction of target-gene counts for target-kd")
     ap.add_argument("--seed", type=int, default=0)
     args = ap.parse_args()
+
+    residual = args.residual if args.model == "target-kd" else None
 
     d = args.controls_dir
     gene_names = load_gene_names(d / "gene_names.csv")
@@ -170,6 +197,9 @@ def main() -> None:
         perts = perts[: args.n_perts]
         print(f"SMOKE TEST: {len(perts)} perturbations only, not a valid submission")
 
+    model_desc = ("no-change" if residual is None
+                  else f"target-kd (residual {residual})")
+    print(f"model: {model_desc}")
     print(f"{len(gene_names):,} genes, {len(perts):,} perturbations, "
           f"{len(CONTEXTS)} contexts")
     print(f"target rows: {len(perts) * CELLS_PER_PERT * len(CONTEXTS):,}")
@@ -186,7 +216,8 @@ def main() -> None:
 
             for start in range(0, len(perts), args.chunk_perts):
                 block = perts[start : start + args.chunk_perts]
-                chunk = build_chunk(ctrl, block, ctx, gene_names, rng)
+                chunk = build_chunk(ctrl, block, ctx, gene_names, rng,
+                                    knockdown_residual=residual)
                 p = tmpdir / f"chunk_{ctx}_{start:05d}.h5ad"
                 chunk.write_h5ad(p, compression="gzip")
                 chunk_paths.append(p)
