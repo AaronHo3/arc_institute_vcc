@@ -81,6 +81,39 @@ recipe), not a transfer measurement. No fewshot-vs-zeroshot conclusion can
 be drawn from these runs. Next: fine-tune from Arc's pretrained STATE
 weights (init_from) instead of training from scratch on consumer hardware.
 
+## Zeroshot-vs-fewshot degradation (2026-09-06, from Arc's published runs)
+
+Arc's ST-HVG-Replogle release (HuggingFace) contains their preprint's paired
+fewshot/zeroshot STATE runs for all four essential-panel lines, with
+per-perturbation evaluation CSVs. `degradation_analysis.py` pairs each
+line's two runs on their shared ~1,000 perturbations. Mean degradation
+(fewshot minus zeroshot), by metric, across held-out lines:
+
+| metric | fewshot | zeroshot | degradation |
+|---|---|---|---|
+| pearson_delta | 0.36-0.49 | 0.26-0.32 | **-0.10 to -0.17** |
+| DE direction match | 0.75-0.76 | 0.67-0.70 | -0.06 to -0.09 |
+| DE overlap@100 | 0.18-0.23 | 0.08-0.11 | **roughly halved** |
+| DE sig-gene recall | 0.26-0.28 | 0.14-0.25 | -0.01 to -0.14 |
+| discrimination (L1) | 0.73-0.78 | 0.58-0.69 | -0.07 to -0.17 |
+| MAE (raw error) | 0.05-0.06 | 0.06-0.08 | ~0 (slightly worse) |
+
+Reads:
+
+- Zero-shot transfer degrades every effect-level metric consistently across
+  all four lines, but is far from destroyed: direction match stays at
+  0.67-0.70 vs 0.5 chance. Consistent with our leaderboard finding that
+  cross-context effect conservation is substantial.
+- **The metric-sensitivity split is the thesis result**: raw-expression
+  error (MAE) barely moves under the same regime change that halves DE
+  overlap. A leaderboard weighted toward expression-error metrics would not
+  see zero-shot failure; DE-level metrics see it clearly. Mirrors our
+  submission-side finding that mse pinned at 0 across radically different
+  predictions.
+- Attribution: models and eval outputs are Arc's (ST-HVG-Replogle); the
+  pairing analysis and framing are ours. Our own from-scratch runs (above)
+  could not measure this due to compute-floor training failure.
+
 ## Public-data census (2026-09-04)
 
 Coverage of the 300 validation perturbations by public CRISPRi datasets:
