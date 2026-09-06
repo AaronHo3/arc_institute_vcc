@@ -61,6 +61,26 @@ target-knockdown. Rank 552 -> 265. Reads:
 - Aggregate crossed zero: a lookup table with no training now beats the
   server reference. The bar for STATE is now this, not the null.
 
+## STATE from-scratch training: negative result (2026-09-06)
+
+Trained STATE (132M params) from scratch on the harmonized 5-context corpus,
+paired fewshot/zeroshot Jurkat splits, 16,000 steps x batch 8 (~2-4% of the
+400k-step default; chosen to fit one RTX 4070 Ti overnight). Both models
+evaluated on the shared 200 held-out (Jurkat, pert) pairs, and the fewshot
+model additionally on 100 pairs it trained on:
+
+| eval set | pearson_delta | DE direction | pred sig genes | discrim (chance=0.5) |
+|---|---|---|---|---|
+| fewshot, held-out 200 | 0.006 | 0.51 | 0.005 (real: 218) | 0.54 |
+| zeroshot, held-out 200 | 0.003 | 0.50 | 0.5 (real: 218) | 0.52 |
+| fewshot, trained-on 100 | 0.006 | 0.50 | 0.0 (real: 211) | 0.53 |
+
+The model fails identically on data it trained on, so this is a training
+failure (insufficient steps and/or missing the recommended preprocessing
+recipe), not a transfer measurement. No fewshot-vs-zeroshot conclusion can
+be drawn from these runs. Next: fine-tune from Arc's pretrained STATE
+weights (init_from) instead of training from scratch on consumer hardware.
+
 ## Public-data census (2026-09-04)
 
 Coverage of the 300 validation perturbations by public CRISPRi datasets:

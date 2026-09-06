@@ -1,0 +1,12 @@
+[datasets]
+replogle = "C:/Users/aaron/vcc_data/state_train/replogle/"
+nadig = "C:/Users/aaron/vcc_data/state_train/nadig/"
+h1 = "C:/Users/aaron/vcc_data/state_train/h1/"
+
+[training]
+replogle = "train"
+nadig = "train"
+h1 = "train"
+
+[fewshot."nadig.Jurkat"]
+test = ["ALG1L", "ANLN", "ARL4D", "ATIC", "BCAS2", "BORA", "BRCA2", "CBFA2T3", "CCNC", "CENPW", "CHCHD4", "CHEK1", "CLP1", "COG1", "COX17", "CSE1L", "DICER1", "DRAP1", "ELL", "EPRS", "EXOC7", "EXOSC6", "FAM136A", "FEN1", "FNBP4", "GFM1", "GGPS1", "GMIP", "GOSR2", "HAPLN2", "HAUS4", "HPS5", "INO80E", "IPO7", "KAT7", "LCE1E", "LEO1", "LURAP1", "MBTPS1", "MCM5", "MED12", "MICOS10", "MIS18A", "MRPL11", "MRPL18", "MRPL21", "MRPL27", "MRPS27", "MYO1H", "NAA10", "NAA15", "NDUFB3", "NDUFB6", "NDUFV2", "NKAPD1", "NOC4L", "NOP10", "NOP16", "NUP205", "PFDN6", "PLA2G10", "POLR2I", "PPA1", "PPP1R10", "PRPF39", "RAN", "RPL17", "RPL19", "RPL23A", "RPL6", "RPP30", "RPS15", "RPS17", "SAMD4B", "SDHD", "SDR39U1", "SEC61G", "SEH1L", "SLC7A5", "SMAGP", "SMG7", "SNAPC5", "SNRPG", "SRFBP1", "STT3B", "STX5", "SUPT16H", "TAF1D", "TFB2M", "TMEM161B", "TUBA1C", "TUBE1", "USP9X", "VPS18", "WAC", "WDR33", "YY1", "ZC3H18", "ZFR", "ZNF207"]
