@@ -114,6 +114,29 @@ Reads:
   pairing analysis and framing are ours. Our own from-scratch runs (above)
   could not measure this due to compute-floor training failure.
 
+### Stratified by true effect size (pooled over 4 lines)
+
+`degradation_analysis.py --stratify`, binning by n significant DE genes in
+the real data:
+
+| effect bin | n perts | pearson_delta fs/zs | direction fs/zs | overlap@100 fs/zs |
+|---|---|---|---|---|
+| <10 sig genes | 203 | 0.02 / 0.02 | 0.53 / 0.52 | 0.01 / 0.01 |
+| 10-100 | 1,773 | 0.19 / 0.13 | 0.67 / 0.62 | 0.10 / 0.07 |
+| 100-1000 | 2,050 | 0.64 / 0.44 | 0.86 / 0.75 | 0.31 / 0.15 |
+| >1000 | 32 | 0.82 / 0.60 | 0.87 / 0.75 | 0.47 / 0.23 |
+
+- **Below ~10 significant genes, nothing is predictable in either regime**
+  (delta correlation ~0.02, direction at chance) — small-effect failure is
+  fundamental, not a transfer problem.
+- Predictive utility starts around >100 significant genes; that is also
+  where the zero-shot cost concentrates in absolute terms (pearson_delta
+  -0.20, overlap@100 halved).
+- Boundary quantified: the "reliable" regime is large-effect perturbations
+  (~1/3 of the panel), and zero-shot transfer retains ~68-74% of
+  delta-correlation and ~87% of direction accuracy there, but only ~50% of
+  DE-set overlap.
+
 ## Public-data census (2026-09-04)
 
 Coverage of the 300 validation perturbations by public CRISPRi datasets:
