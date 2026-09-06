@@ -32,6 +32,19 @@ EFFECT_BINS = [0, 10, 100, 1000, float("inf")]
 EFFECT_LABELS = ["<10", "10-100", "100-1000", ">1000"]
 
 
+def load_paired(evals_dir: Path) -> dict[str, tuple[pd.DataFrame, pd.DataFrame]]:
+    """Per line: (fewshot, zeroshot) per-perturbation results, index-aligned
+    on the perturbations both runs evaluated."""
+    out = {}
+    for line in LINES:
+        fs = pd.read_csv(evals_dir / "fewshot" / line / f"{line}_results.csv")
+        zs = pd.read_csv(evals_dir / "zeroshot" / line / f"{line}_results.csv")
+        key = fs.columns[0]
+        shared = sorted(set(fs[key]) & set(zs[key]))
+        out[line] = (fs.set_index(key).loc[shared], zs.set_index(key).loc[shared])
+    return out
+
+
 def stratify(evals_dir: Path) -> None:
     """Degradation by true effect size (n significant DE genes in the real
     data, from the zeroshot run's DE so binning is identical across runs)."""
