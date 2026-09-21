@@ -1,0 +1,7 @@
+[datasets]
+replogle_gwps = "C:/Users/aaron/vcc_data/state_finetune_v3/replogle_gwps/"
+
+[training]
+replogle_gwps = "train"
+
+[fewshot]

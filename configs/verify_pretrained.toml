@@ -1,0 +1,8 @@
+[datasets]
+nadig_hvg = "C:/Users/aaron/vcc_data/state_verify/nadig_hvg/"
+
+[training]
+nadig_hvg = "train"
+
+[fewshot."nadig_hvg.jurkat"]
+test = ["AARS", "ABCB7", "ABT1", "ADAM10", "AHCY", "ANAPC11", "ANKRD49", "ARPC4", "ATP6V0D1", "BTAF1", "BYSL", "C1orf131", "CASC3", "CIAPIN1", "CNOT2", "CSNK1A1", "CTU2", "EFR3A", "ELOVL1", "ELP2", "EPB41L2", "EXOC7", "EXOSC8", "GABPB1", "GEMIN5", "GRWD1", "H2AFZ", "HIST1H2BC", "HNRNPU", "INF2", "ISG20L2", "IST1", "IWS1", "KIF4A", "KIN", "LAMTOR1", "LETM1", "LST1", "MCM3", "MIS12", "MRPL15", "MRPL35", "MRPL39", "MRPS12", "MVD", "MVK", "N6AMT1", "NAPG", "NASP", "NDC1", "NDUFA11", "NDUFAB1", "NSUN4", "NUP133", "NUP35", "PDPK1", "PEX19", "PGD", "PGK1", "PLK4", "PPAN", "PPME1", "PPP1R11", "PPP4C", "PRXL2A", "RAC3", "RAD51D", "RBBP5", "REXO2", "RIOK2", "RNF14", "RPL39", "RPL5", "RPP40", "RPS12", "RPS18", "RRP15", "SEH1L", "SETD1A", "SFSWAP", "SMC5", "SMC6", "SPEN", "SRF", "STARD7", "SUPV3L1", "TAF3", "TARS2", "TERF1", "TMED10", "TMEM214", "TPT1", "TRRAP", "UBE2H", "UBE2L3", "UTP20", "VPS54", "WAC", "WDR3", "ZNHIT1"]

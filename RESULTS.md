@@ -137,6 +137,35 @@ the real data:
   delta-correlation and ~87% of direction accuracy there, but only ~50% of
   DE-set overlap.
 
+## Pipeline verification and fine-tune diagnosis (2026-09-07)
+
+Ran Arc's untouched ST-HVG-Replogle fewshot/jurkat checkpoint through our
+full local pipeline (our Nadig conversion, our reverse-engineered
+normalization, our cell-load setup, our eval) on 100 of their held-out
+Jurkat perturbations: **pearson_delta 0.377 vs their published 0.381**
+(direction 0.785 vs 0.762, overlap@100 0.168 vs 0.183). The local pipeline
+is verified end to end; all earlier "dead model" results were real model
+failures, not evaluation artifacts.
+
+Fine-tune v1/v2 failure diagnosed (both floored even on trained-on perts):
+
+- Exposure starvation: 9,867 freshly-initialized one-hot perturbation
+  embeddings x 6k steps = ~19 examples/pert (Arc's runs: ~3,000). The
+  model regressed to its residual predict-the-controls path.
+- Holdout design flaw: with one-hot pert encoding, a held-out pert's
+  embedding is untrained noise — heldout evals were floored by
+  construction unless the pert was seen in another training context.
+
+Fix (fine-tune v3, running): restrict to the 272 challenge perturbations +
+controls (66k cells), all perts in training (~2,300 exposures each at 20k
+steps); validate via reproduction of known K562 effects; context transfer
+is then tested on the leaderboard.
+
+Also: the 50-pert challenge-gene eval revealed the challenge panel's
+covered genes are mostly small-effect in K562 (mean 6 significant DE genes
+vs 200+ for essential-panel perts) — the regime our stratification shows is
+hard for any model. Tempers expected leaderboard gains for all approaches.
+
 ## Public-data census (2026-09-04)
 
 Coverage of the 300 validation perturbations by public CRISPRi datasets:

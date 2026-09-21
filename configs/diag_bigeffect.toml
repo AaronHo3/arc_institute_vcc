@@ -1,0 +1,8 @@
+[datasets]
+replogle_gwps = "C:/Users/aaron/vcc_data/state_finetune_small/replogle_gwps/"
+
+[training]
+replogle_gwps = "train"
+
+[fewshot."replogle_gwps.K562gw"]
+test = ["ZNF774", "LIG1", "OGDH", "ZNF830", "MED30", "POLR3A", "PARK7", "RIPOR1", "PPAT", "GRINA", "MED12", "MCOLN1", "RUVBL2", "FECH", "PSMA5", "DNAJC17", "MED9", "SARS", "LRP8", "NADSYN1", "CDYL", "SOX2", "RPAP3", "SUPT6H", "LDB1", "PCED1A", "ZBED2", "DROSHA", "UTP14A", "FIP1L1", "SNRPD2", "MED21", "RPL7A", "MED19", "DPY30", "HSPE1", "FUNDC2", "ZNF497", "RBM22", "ESYT1", "POLR2K", "RPL27", "ITFG1", "TAFA2", "ASB8", "ZNF423", "HOXC6", "AARS", "INTS2", "TXNIP", "KNL1", "C11orf74", "TIAL1", "ANAPC4", "PSMD2", "ZNF585A", "SBNO2", "COX19", "ZC3H8", "POLR2G"]
