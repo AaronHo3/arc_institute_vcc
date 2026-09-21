@@ -1,7 +1,7 @@
 # When do perturbation-response predictions transfer to a new cell context — and do the metrics tell you when they've failed?
 
 > **STATUS: skeleton.** Structure, claims, numbers, and figure references are
-> final; prose is to be written (by Aaron, in Aaron's voice). Each section
+> final; prose is to be written. Each section
 > lists its claims with evidence pointers. Nothing goes in the final text
 > that isn't backed by a pointer here.
 
@@ -24,8 +24,8 @@
 - Why metric validity under context shift is the open problem (cite Arc's
   own framing: "model accuracy, metric design and biological
   generalization"; six-metric aggregate).
-- Analogy to external validation of clinical models (leave-one-hospital-out
-  -> leave-one-cell-type-out). One paragraph, no overclaiming.
+- Analogy to external validation of predictive models (held-out site ->
+  held-out cell type). One paragraph, no overclaiming.
 
 ## 2. The baseline ladder (leaderboard evidence)
 
@@ -113,8 +113,6 @@ pairing analysis; ~1,000 shared perts per line, 4 lines).
 - Jiang regime differences (see Section 5 caveats).
 - Leaderboard findings use validation contexts A-C; final-test
   generalization unknown until Oct 22.
-- Author is ~6 weeks into single-cell genomics; analysis choices favored
-  simple, checkable methods.
 
 ## 9. Reproducibility
 
@@ -131,4 +129,3 @@ pairing analysis; ~1,000 shared perts per line, 4 lines).
 - Arc Institute for STATE, cell-eval/cell-load, and published checkpoints
   with evaluation outputs; challenge organizers; dataset authors (Replogle,
   Nadig, Jiang, DepMap).
-- AI-assisted engineering note (decide wording; be comfortable with it).
